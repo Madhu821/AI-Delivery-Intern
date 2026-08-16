@@ -1,0 +1,172 @@
+{
+  "tools": [
+    {
+      "id": "59b6783f-51db-49e7-8878-0f053883e98d",
+      "type": "function",
+      "function": {
+        "name": "verify_customer",
+        "description": "Verifies the customer's identity before any loan, EMI, overdue amount, payment, or debt information is disclosed. This is the mandatory authentication gate. Only verified=true allows Maya to disclose account details.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "account_id": {
+              "type": "string",
+              "description": "The customer's account identifier. For this assessment use ACC-88392."
+            },
+            "verification_code": {
+              "type": "string",
+              "description": "The verification code provided verbally by the customer."
+            }
+          },
+          "required": [
+            "account_id",
+            "verification_code"
+          ]
+        }
+      },
+      "server": {
+        "url": "https://ai-delivery-intern.onrender.com/webhook"
+      }
+    },
+    {
+      "id": "844c0561-e1ba-49b0-add1-7639270a1199",
+      "type": "function",
+      "function": {
+        "name": "log_promise_to_pay",
+        "description": "Records a confirmed Promise-to-Pay after the customer explicitly agrees to pay. Do not call until the customer has clearly confirmed both the payment amount and payment date.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "amount": {
+              "type": "number",
+              "description": "Amount the customer explicitly committed to pay in INR."
+            },
+            "ptp_date": {
+              "type": "string",
+              "description": "Customer's promised payment date in YYYY-MM-DD format."
+            },
+            "account_id": {
+              "type": "string",
+              "description": "Customer account identifier. Use ACC-88392 for this assessment."
+            }
+          },
+          "required": [
+            "account_id",
+            "ptp_date",
+            "amount"
+          ]
+        }
+      },
+      "server": {
+        "url": "https://ai-delivery-intern.onrender.com/webhook"
+      }
+    },
+    {
+      "id": "4530940f-857e-4660-8db6-b030b0eadc98",
+      "type": "function",
+      "function": {
+        "name": "send_payment_link",
+        "description": "Sends a mock payment link to the customer's registered contact channel after a valid payment commitment or when the customer requests the payment link. This tool does not process a payment.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "account_id": {
+              "type": "string",
+              "description": "Customer account identifier. Use ACC-88392 for this assessment."
+            },
+            "channel": {
+              "type": "string",
+              "enum": [
+                "SMS",
+                "WhatsApp",
+                "BOTH"
+              ],
+              "description": "Channel through which the mock payment link should be sent."
+            }
+          },
+          "required": [
+            "account_id",
+            "channel"
+          ]
+        }
+      },
+      "server": {
+        "url": "https://ai-delivery-intern.onrender.com/webhook"
+      }
+    },
+    {
+      "id": "ed02c3f2-0271-433e-a3ce-9eaac3e4b16c",
+      "type": "function",
+      "function": {
+        "name": "escalate_to_agent",
+        "description": "Escalates the customer to a human collections agent when the case requires human handling, such as a debt dispute or financial hardship. Do not use this tool for routine Promise-to-Pay cases.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "account_id": {
+              "type": "string",
+              "description": "Customer account identifier. Use ACC-88392 for this assessment."
+            },
+            "reason": {
+              "type": "string",
+              "enum": [
+                "DISPUTE",
+                "HARDSHIP_REQUEST"
+              ],
+              "description": "Reason for human escalation."
+            }
+          },
+          "required": [
+            "account_id",
+            "reason"
+          ]
+        }
+      },
+      "server": {
+        "url": "https://ai-delivery-intern.onrender.com/webhook"
+      }
+    },
+    {
+      "id": "23e4faac-43c1-47b0-a7ff-7f40584f6f40",
+      "type": "function",
+      "function": {
+        "name": "mark_disposition",
+        "description": "Records the final outcome of the collection call. This must be called before ending every completed conversation so that the call has an auditable disposition.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "account_id": {
+              "type": "string",
+              "description": "Customer account identifier. Use ACC-88392 for this assessment."
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "PTP_AGREED",
+                "ALREADY_PAID",
+                "DISPUTED",
+                "HARDSHIP_ESCALATED",
+                "WRONG_PERSON",
+                "DO_NOT_CALL",
+                "NO_RESPONSE"
+              ],
+              "description": "Final outcome of the call."
+            },
+            "notes": {
+              "type": "string",
+              "description": "Short factual summary of the outcome. Do not include unnecessary sensitive information."
+            }
+          },
+          "required": [
+            "account_id",
+            "status",
+            "notes"
+          ]
+        }
+      },
+      "server": {
+        "url": "https://ai-delivery-intern.onrender.com/webhook"
+      }
+    }
+  ]
+}

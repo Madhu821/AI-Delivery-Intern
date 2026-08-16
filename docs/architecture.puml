@@ -1,0 +1,65 @@
+@startuml
+title AI-Delivery-Intern Voicebot - MVP Architecture
+
+actor Customer
+
+rectangle "Vapi" {
+    component "Telephony" as Telephony
+    component "Soniox STT RT v5" as STT
+    component "GPT-4.1\nMaya Orchestrator" as LLM
+    component "Elliot v2 TTS" as TTS
+
+    component "Conversation State\n& Guardrails" as State
+}
+
+cloud "Render" {
+    component "FastAPI\n/webhook" as API
+    database "Mock Collections\nData" as Data
+}
+
+component "Custom Tools" as Tools {
+    [verify_customer]
+    [log_promise_to_pay]
+    [send_payment_link]
+    [escalate_to_agent]
+    [mark_disposition]
+}
+
+Customer --> Telephony : Voice call
+Telephony --> STT : Audio
+STT --> LLM : Transcript
+
+LLM --> State : State / intent
+State --> LLM : Allowed action
+
+LLM --> Tools : Tool call
+Tools --> API : HTTPS POST /webhook
+API --> Data : Read / write
+API --> Tools : Tool result
+Tools --> LLM : Result
+
+LLM --> TTS : Response text
+TTS --> Telephony : Audio
+Telephony --> Customer : Voice response
+
+note right of State
+Authentication is mandatory.
+
+AUTH_PENDING
+    |
+    | verify_customer = true
+    v
+AUTHENTICATED
+
+No debt disclosure
+before authentication.
+end note
+
+note bottom of API
+Assessment MVP:
+- Static customer data
+- Mock payment link
+- Mock human escalation
+end note
+
+@enduml
