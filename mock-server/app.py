@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 from typing import Any
 import json
 import logging
+import re
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
@@ -115,7 +116,7 @@ def tool_result(tool_call_id: str, result: dict[str, Any]) -> dict[str, Any]:
 
 def verify_customer(args: dict[str, Any]) -> dict[str, Any]:
     account_id = args.get("account_id")
-    verification_code = str(args.get("verification_code", "")).strip()
+    verification_code = re.sub(r"\D", "", str(args.get("verification_code", "")))
 
     if account_id != CUSTOMER["account_id"]:
         return {
